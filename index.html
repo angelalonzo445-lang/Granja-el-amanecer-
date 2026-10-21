@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroERP - Panel de Administración</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #f1f8e9;
+            --text-color: #333;
+            --bg-color: #f4f6f8;
+            --danger-color: #c62828;
+            --warning-bg: #ffebee;
+            --warning-text: #c62828;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-tabs {
+            background-color: #1b5e20;
+            display: flex;
+            padding: 0 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .tab-btn:hover, .tab-btn.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-bottom: 4px solid white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card h3 { margin: 0 0 0.5rem 0; color: #555; font-size: 0.85rem; text-transform: uppercase; }
+        .card p { margin: 0; font-size: 1.4rem; font-weight: bold; color: var(--primary-color); }
+        
+        .section-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        h2 { border-bottom: 2px solid var(--secondary-color); padding-bottom: 0.5rem; color: var(--primary-color); font-size: 1.2rem; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        table th, table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.95rem;
+        }
+        table th { background-color: var(--secondary-color); color: var(--primary-color); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .btn:hover { background-color: #1b5e20; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #8e0000; }
+        .btn-info { background-color: #0277bd; }
+        .btn-info:hover { background-color: #01579b; }
+        .btn-purple { background-color: #7b1fa2; }
+        .btn-purple:hover { background-color: #4a148c; }
+
+        .badge-alert {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close-btn:hover { color: #000; }
+        .fel-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .fel-details { font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
+        .fel-barcode { text-align: center; font-family: monospace; font-size: 1.2rem; background: #eee; padding: 0.5rem; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GRANJA EL AMANECER - Panel de Administración</h1>
+        <span>Proyecto de Administración</span>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="cambiarPestaña('granja', event)">🌾 Operaciones y Finanzas</button>
+        <button class="tab-btn" onclick="cambiarPestaña('compras', event)">📦 Proveedores y Compras</button>
+        <button class="tab-btn" onclick="cambiarPestaña('rrhh', event)">👥 Recursos Humanos</button>
+    </div>
+
+    <div class="container">
+        <!-- PESTAÑA 1: OPERACIONES DE GRANJA Y FINANZAS -->
+        <div id="tab-granja" class="tab-content active">
+            <!-- Dashboard / Indicadores -->
+            <div class="grid-stats">
+                <div class="card">
+                    <h3>Ventas Totales</h3>
+                    <p id="totalVentas">Q 0.00</p>
+                </div>
+                <div class="card">
+                    <h3>Gastos y Costos</h3>
+                    <p id="totalGastos" style="color: var(--danger-color);">Q 0.00</p>
+                </div>
+                <div class="card">
+                    <h3>Utilidad Neta</h3>
+                    <p id="utilidadNeta">Q 0.00</p>
+                </div>
+                <div class="card">
+                    <h3>Stock Total</h3>
+                    <p id="totalStock">195</p>
+                </div>
+            </div>
+
+            <!-- Módulo Comercial: Registrar Venta -->
+            <div class="section-box">
+                <h2>Módulo Comercial: Registrar Venta y Emitir FEL</h2>
+                <form id="formVenta" onsubmit="registrarVenta(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="cliente">Nombre del Cliente</label>
+                            <input type="text" id="cliente" required placeholder="Ej. Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label for="nitCliente">NIT del Cliente</label>
+                            <input type="text" id="nitCliente" required placeholder="Ej. 1234567-8 o C/F">
+                        </div>
+                        <div class="form-group">
+                            <label for="productoSelect">Seleccionar Producto</label>
+                            <select id="productoSelect" required>
+                                <option value="0" data-precio="15">Leche Fresca Entera (1L) - Q15</option>
+                                <option value="1" data-precio="38">Cartón de Huevos (30 un.) - Q38</option>
+                                <option value="2" data-precio="25">Queso Fresco Artesanal (libra) - Q25</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad</label>
+                            <input type="number" id="cantidad" min="1" value="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Procesar Venta y Generar FEL</button>
+                </form>
+            </div>
+
+            <!-- Módulo Financiero: Registrar Gasto -->
+            <div class="section-box">
+                <h2>Módulo Financiero: Registrar Gasto Operativo</h2>
+                <form id="formGasto" onsubmit="registrarGasto(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="conceptoGasto">Concepto del Gasto</label>
+                            <input type="text" id="conceptoGasto" required placeholder="Ej. Combustible / Mantenimiento">
+                        </div>
+                        <div class="form-group">
+                            <label for="montoGasto">Monto (GTQ)</label>
+                            <input type="number" id="montoGasto" step="0.01" min="0.01" required placeholder="Ej. 250.00">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Registrar Gasto</button>
+                </form>
+            </div>
+
+            <!-- Módulo de Inventario con Alertas -->
+            <div class="section-box">
+                <h2>Módulo de Inventario y Alertas de Stock</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Stock Actual</th>
+                            <th>Estado</th>
+                            <th>Precio Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaInventario">
+                        <tr>
+                            <td>PRD-001</td>
+                            <td>Leche Fresca Entera (1L)</td>
+                            <td>Lácteos</td>
+                            <td id="stock-0">120 unidades</td>
+                            <td><span id="badge-0">-</span></td>
+                            <td>Q 15.00</td>
+                        </tr>
+                        <tr>
+                            <td>PRD-002</td>
+                            <td>Cartón de Huevos (30 un.)</td>
+                            <td>Avícola</td>
+                            <td id="stock-1">45 cartones</td>
+                            <td><span id="badge-1">-</span></td>
+                            <td>Q 38.00</td>
+                        </tr>
+                        <tr>
+                            <td>PRD-003</td>
+                            <td>Queso Fresco Artesanal (libra)</td>
+                            <td>Lácteos</td>
+                            <td id="stock-2">30 libras</td>
+                            <td><span id="badge-2">-</span></td>
+                            <td>Q 25.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Historiales -->
+            <div class="section-box">
+                <h2>Historial de Ventas y Facturas Electrónicas (FEL)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>NIT</th>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Total</th>
+                            <th>Acción FEL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaVentas">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #777;">No hay ventas registradas todavía.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-box">
+                <h2>Historial de Gastos y Nómina</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaGastos">
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: #777;">No hay gastos registrados todavía.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: PROVEEDORES Y ÓRDENES DE COMPRA -->
+        <div id="tab-compras" class="tab-content">
+            <div class="section-box">
+                <h2>Módulo de Proveedores y Órdenes de Compra (Reabastecimiento)</h2>
+                <p style="color: #666; font-size: 0.9rem;">Al emitir una orden de compra, el stock de los productos aumentará automáticamente y el costo total se reflejará en los gastos financieros de la granja.</p>
+                <form id="formCompra" onsubmit="registrarCompra(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="proveedor">Nombre del Proveedor</label>
+                            <input type="text" id="proveedor" required placeholder="Ej. Insumos Agrícolas del Norte S.A.">
+                        </div>
+                        <div class="form-group">
+                            <label for="productoCompraSelect">Producto a Reabastecer</label>
+                            <select id="productoCompraSelect" required>
+                                <option value="0">Leche Fresca Entera (1L)</option>
+                                <option value="1">Cartón de Huevos (30 un.)</option>
+                                <option value="2">Queso Fresco Artesanal (libra)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidadCompra">Cantidad a Ingresar</label>
+                            <input type="number" id="cantidadCompra" min="1" value="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="costoCompra">Costo Total de Compra (GTQ)</label>
+                            <input type="number" id="costoCompra" step="0.01" min="0.01" required placeholder="Ej. 500.00">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-purple">Emitir Orden y Sumar Stock</button>
+                </form>
+            </div>
+
+            <div class="section-box">
+                <h2>Historial de Órdenes de Compra a Proveedores</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Producto Adquirido</th>
+                            <th>Cantidad</th>
+                            <th>Costo Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCompras">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #777;">No hay órdenes de compra registradas todavía.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 3: RECURSOS HUMANOS -->
+        <div id="tab-rrhh" class="tab-content">
+            <div class="section-box">
+                <h2>Módulo RRHH: Gestión de Empleados y Nómina Directiva</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre del Empleado</th>
+                            <th>Puesto</th>
+                            <th>Salario Mensual (GTQ)</th>
+                            <th>Vacaciones Usadas</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaEmpleados">
+                        <tr>
+                            <td>EMP-01</td>
+                            <td>Néstor Gil</td>
+                            <td>Director General de Operaciones</td>
+                            <td>Q 12,500.00</td>
+                            <td>4 días</td>
+                            <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="pagarNomina(0)">Pagar Nómina</button></td>
+                        </tr>
+                        <tr>
+                            <td>EMP-02</td>
+                            <td>Daniel Ortiz</td>
+                            <td>Gerente Financiero y Administrativo</td>
+                            <td>Q 11,000.00</td>
+                            <td>2 días</td>
+                            <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="pagarNomina(1)">Pagar Nómina</button></td>
+                        </tr>
+                        <tr>
+                            <td>EMP-03</td>
+                            <td>Selvin Mejia</td>
+                            <td>Jefe de Producción Pecuaria</td>
+                            <td>Q 9,500.00</td>
+                            <td>5 días</td>
+                            <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="pagarNomina(2)">Pagar Nómina</button></td>
+                        </tr>
+                        <tr>
+                            <td>EMP-04</td>
+                            <td>Cesar Chipel</td>
+                            <td>Supervisor de Control de Calidad</td>
+                            <td>Q 9,000.00</td>
+                            <td>0 días</td>
+                            <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="pagarNomina(3)">Pagar Nómina</button></td>
+                        </tr>
+                        <tr>
+                            <td>EMP-05</td>
+                            <td>Angel Sotojo</td>
+                            <td>Director de Logística y Cadena de Suministro</td>
+                            <td>Q 10,500.00</td>
+                            <td>3 días</td>
+                            <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="pagarNomina(4)">Pagar Nómina</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA MODAL PARA LA FACTURA ELECTRÓNICA (FEL) -->
+    <div id="modalFel" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <div class="fel-header">
+                <h3>DOCUMENTO TRIBUTARIO ELECTRÓNICO (FEL)</h3>
+                <p><strong>AgroERP S.A.</strong><br>NIT Emisor: 8945213-9 | Guatemala, C.A.</p>
+            </div>
+            <div class="fel-details" id="contenidoFel"></div>
+            <div class="fel-barcode">|||||| | |||||||| |||| |||||||||</div>
+        </div>
+    </div>
+
+    <script>
+        let inventario = [
+            { stock: 120, unidad: 'unidades', nombre: 'Leche Fresca Entera (1L)' },
+            { stock: 45, unidad: 'cartones', nombre: 'Cartón de Huevos (30 un.)' },
+            { stock: 30, unidad: 'libras', nombre: 'Queso Fresco Artesanal (libra)' }
+        ];
+
+        let empleados = [
+            { nombre: "Néstor Gil", puesto: "Director General de Operaciones", salario: 12500 },
+            { nombre: "Daniel Ortiz", puesto: "Gerente Financiero y Administrativo", salario: 11000 },
+            { nombre: "Selvin Mejia", puesto: "Jefe de Producción Pecuaria", salario: 9500 },
+            { nombre: "Cesar Chipel", puesto: "Supervisor de Control de Calidad", salario: 9000 },
+            { nombre: "Angel Sotojo", puesto: "Director de Logística y Cadena de Suministro", salario: 10500 }
+        ];
+        
+        let acumuladoVentas = 0;
+        let acumuladoGastos = 0;
+        let historialVentas = [];
+        let historialGastos = [];
+        let historialCompras = [];
+
+        actualizarAlertasStock();
+
+        function cambiarPestaña(pestana, event) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('tab-' + pestana).classList.add('active');
+            if (event) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        function registrarVenta(event) {
+            event.preventDefault();
+            
+            const cliente = document.getElementById('cliente').value;
+            const nitCliente = document.getElementById('nitCliente').value;
+            const select = document.getElementById('productoSelect');
+            const indexProducto = parseInt(select.value);
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            
+            const opciones = select.options;
+            const nombreProducto = opciones[indexProducto].text.split(' - ')[0];
+            const precioUnitario = parseFloat(opciones[indexProducto].getAttribute('data-precio'));
+            
+            if (cantidad > inventario[indexProducto].stock) {
+                alert('No hay suficiente stock disponible para realizar esta venta.');
+                return;
+            }
+
+            inventario[indexProducto].stock -= cantidad;
+            document.getElementById(`stock-${indexProducto}`).innerText = `${inventario[indexProducto].stock} ${inventario[indexProducto].unidad}`;
+            
+            const totalVenta = precioUnitario * cantidad;
+            acumuladoVentas += totalVenta;
+
+            const uuidFel = 'UUID-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            const fechaHora = new Date().toLocaleString();
+
+            historialVentas.push({
+                cliente, nit: nitCliente, producto: nombreProducto, cantidad, total: totalVenta, uuid: uuidFel, fecha: fechaHora, precioUni: precioUnitario
+            });
+
+            actualizarDashboard();
+            actualizarTablaHistorialVentas();
+            actualizarAlertasStock();
+            document.getElementById('formVenta').reset();
+            verFacturaFel(historialVentas.length - 1);
+        }
+
+        function registrarCompra(event) {
+            event.preventDefault();
+
+            const proveedor = document.getElementById('proveedor').value;
+            const indexProducto = parseInt(document.getElementById('productoCompraSelect').value);
+            const cantidad = parseInt(document.getElementById('cantidadCompra').value);
+            const costo = parseFloat(document.getElementById('costoCompra').value);
+
+            inventario[indexProducto].stock += cantidad;
+            document.getElementById(`stock-${indexProducto}`).innerText = `${inventario[indexProducto].stock} ${inventario[indexProducto].unidad}`;
+
+            acumuladoGastos += costo;
+            historialGastos.push({ concepto: `Compra a Proveedor: ${proveedor} (${inventario[indexProducto].nombre})`, monto: costo });
+
+            historialCompras.push({ proveedor, producto: inventario[indexProducto].nombre, cantidad, costo });
+
+            actualizarDashboard();
+            actualizarTablaHistorialCompras();
+            actualizarTablaHistorialGastos();
+            actualizarAlertasStock();
+            document.getElementById('formCompra').reset();
+            alert('Orden de compra registrada con éxito. Se incrementó el inventario y se registró el costo en finanzas.');
+        }
+
+        function registrarGasto(event) {
+            event.preventDefault();
+
+            const concepto = document.getElementById('conceptoGasto').value;
+            const monto = parseFloat(document.getElementById('montoGasto').value);
+
+            acumuladoGastos += monto;
+            historialGastos.push({ concepto, monto });
+
+            actualizarDashboard();
+            actualizarTablaHistorialGastos();
+            document.getElementById('formGasto').reset();
+        }
+
+        function pagarNomina(index) {
+            const emp = empleados[index];
+            const concepto = `Nómina Mensual - ${emp.nombre} (${emp.puesto})`;
+            
+            acumuladoGastos += emp.salario;
+            historialGastos.push({ concepto, monto: emp.salario });
+
+            actualizarDashboard();
+            actualizarTablaHistorialGastos();
+            alert(`Se ha procesado y pagado la nómina directiva de ${emp.nombre} por Q ${emp.salario.toFixed(2)}. El gasto se reflejó automáticamente en la pestaña de finanzas.`);
+        }
+
+        function verFacturaFel(index) {
+            const v = historialVentas[index];
+            const contenido = `
+                <p><strong>Fecha y Hora:</strong> ${v.fecha}</p>
+                <p><strong>Autorización (UUID):</strong> ${v.uuid}</p>
+                <p><strong>NIT del Receptor:</strong> ${v.nit}</p>
+                <p><strong>Nombre del Receptor:</strong> ${v.cliente}</p>
+                <hr style="border: 0.5px solid #eee;">
+                <p><strong>Descripción:</strong> ${v.cantidad}x ${v.producto} (Q ${v.precioUni.toFixed(2)} c/u)</p>
+                <p><strong>Total de la Factura:</strong> <strong>Q ${v.total.toFixed(2)}</strong></p>
+                <p style="font-size: 0.8rem; color: #555; text-align: center; margin-top: 1rem;">Certificador FEL Autorizado: INFILE S.A. (Simulación Académica)</p>
+            `;
+            document.getElementById('contenidoFel').innerHTML = contenido;
+            document.getElementById('modalFel').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalFel').style.display = 'none';
+        }
+
+        function actualizarDashboard() {
+            document.getElementById('totalVentas').innerText = `Q ${acumuladoVentas.toFixed(2)}`;
+            document.getElementById('totalGastos').innerText = `Q ${acumuladoGastos.toFixed(2)}`;
+            
+            const utilidad = acumuladoVentas - acumuladoGastos;
+            const elementoUtilidad = document.getElementById('utilidadNeta');
+            elementoUtilidad.innerText = `Q ${utilidad.toFixed(2)}`;
+            elementoUtilidad.style.color = utilidad >= 0 ? 'var(--primary-color)' : 'var(--danger-color)';
+            
+            let stockTotalActual = inventario.reduce((acc, item) => acc + item.stock, 0);
+            document.getElementById('totalStock').innerText = stockTotalActual;
+        }
+
+        function actualizarAlertasStock() {
+            inventario.forEach((item, index) => {
+                const badge = document.getElementById(`badge-${index}`);
+                if (item.stock <= 10) {
+                    badge.className = 'badge-alert';
+                    badge.innerText = '¡Stock Crítico!';
+                } else {
+                    badge.className = '';
+                    badge.style.color = '#2e7d32';
+                    badge.innerText = 'Normal';
+                }
+            });
+        }
+
+        function actualizarTablaHistorialVentas() {
+            const tbody = document.getElementById('tablaVentas');
+            tbody.innerHTML = '';
+            historialVentas.forEach((venta, i) => {
+                tbody.innerHTML += `<tr>
+                    <td>${venta.cliente}</td>
+                    <td>${venta.nit}</td>
+                    <td>${venta.producto}</td>
+                    <td>${venta.cantidad}</td>
+                    <td>Q ${venta.total.toFixed(2)}</td>
+                    <td><button class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="verFacturaFel(${i})">Ver FEL</button></td>
+                </tr>`;
+            });
+        }
+
+        function actualizarTablaHistorialCompras() {
+            const tbody = document.getElementById('tablaCompras');
+            tbody.innerHTML = '';
+            historialCompras.forEach(compra => {
+                tbody.innerHTML += `<tr>
+                    <td>${compra.proveedor}</td>
+                    <td>${compra.producto}</td>
+                    <td>${compra.cantidad}</td>
+                    <td>Q ${compra.costo.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+
+        function actualizarTablaHistorialGastos() {
+            const tbody = document.getElementById('tablaGastos');
+            tbody.innerHTML = '';
+            historialGastos.forEach(gasto => {
+                tbody.innerHTML += `<tr>
+                    <td>${gasto.concepto}</td>
+                    <td>Q ${gasto.monto.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+    </script>
+</body>
+</html>
